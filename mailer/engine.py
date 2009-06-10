@@ -3,6 +3,7 @@ import smtplib
 import logging
 from lockfile import FileLock, AlreadyLocked, LockTimeout
 from socket import error as socket_error
+from datetime import datetime
 
 from mailer.models import Message, DontSendEntry, MessageLog
 
@@ -23,15 +24,21 @@ def prioritize():
     """
     
     while True:
-        while Message.objects.high_priority().count() or Message.objects.medium_priority().count():
-            while Message.objects.high_priority().count():
-                for message in Message.objects.high_priority().order_by('when_added'):
+        now=datetime.now()
+        high_priority=Message.objects.high_priority().filter(schedule__lte=now)
+        medium_priority=Message.objects.medium_priority().filter(schedule__lte=now)
+        low_priority=Message.objects.low_priority().filter(schedule__lte=now)
+        non_deferred=Message.objects.non_deferred().filter(schedule__lte=now)
+
+        while high_priority.count() or medium_priority.count():
+            while high_priority.count():
+                for message in high_priority.order_by('when_added'):
                     yield message
-            while Message.objects.high_priority().count() == 0 and Message.objects.medium_priority().count():
-                yield Message.objects.medium_priority().order_by('when_added')[0]
-        while Message.objects.high_priority().count() == 0 and Message.objects.medium_priority().count() == 0 and Message.objects.low_priority().count():
-            yield Message.objects.low_priority().order_by('when_added')[0]
-        if Message.objects.non_deferred().count() == 0:
+            while high_priority.count() == 0 and medium_priority.count():
+                yield medium_priority.order_by('when_added')[0]
+        while high_priority.count() == 0 and medium_priority.count() == 0 and low_priority.count():
+            yield low_priority.order_by('when_added')[0]
+        if non_deferred.count() == 0:
             break
 
 
