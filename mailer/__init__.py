@@ -19,7 +19,7 @@ PRIORITY_MAPPING = {
 
 def send_mail(subject, message, from_email, recipient_list, priority="medium",
               fail_silently=False, auth_user=None, auth_password=None,
-              schedule=None):
+              schedule=None, content_subtype='plain'):
     from django.utils.encoding import force_unicode
     from mailer.models import Message
     # need to do this in case subject used lazy version of ugettext
@@ -30,7 +30,8 @@ def send_mail(subject, message, from_email, recipient_list, priority="medium",
                 from_address=from_email,
                 subject=subject,
                 message_body=message,
-                priority=priority)
+                priority=priority,
+                content_subtype=content_subtype)
         if schedule:
             m.schedule=schedule
         m.save()

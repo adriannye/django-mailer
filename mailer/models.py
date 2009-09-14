@@ -68,8 +68,8 @@ class Message(models.Model):
     when_added = models.DateTimeField(default=datetime.now)
     priority = models.CharField(max_length=1, choices=PRIORITIES, default='2')
     schedule = models.DateTimeField(default=datetime.now)
+    content_subtype = models.CharField(max_length=10, default='plain')
     # @@@ campaign?
-    # @@@ content_type?
     
     def defer(self):
         self.priority = '4'
