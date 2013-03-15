@@ -10,6 +10,7 @@ from mailer.models import Message, DontSendEntry, MessageLog
 from django.conf import settings
 from django.core.mail import send_mail as core_send_mail
 from django.core.mail import EmailMessage
+from django.utils import timezone
 
 # when queue is empty, how long to wait (in seconds) before checking again
 EMPTY_QUEUE_SLEEP = getattr(settings, "MAILER_EMPTY_QUEUE_SLEEP", 30)
@@ -25,7 +26,7 @@ def prioritize():
     """
     
     while True:
-        now=datetime.now()
+        now=timezone.now()
         high_priority=Message.objects.high_priority().filter(schedule__lte=now)
         medium_priority=Message.objects.medium_priority().filter(schedule__lte=now)
         low_priority=Message.objects.low_priority().filter(schedule__lte=now)
